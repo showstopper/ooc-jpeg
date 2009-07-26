@@ -22,6 +22,7 @@ typedef struct jpeg_error_mgr JpegErrorMgr;
 typedef j_compress_ptr JCompressPtr;
 typedef j_decompress_ptr JDecompressPtr;
 
+   
 
 class JpegWriter {
 
@@ -49,7 +50,7 @@ class JpegWriter {
         cinfo.err = JpegStdError(mgr);
     }
     
-    func startCompress(Bool writeAllTables) {
+    func start(Bool writeAllTables) {
         jpeg_start_compress(&cinfo, writeAllTables);
     }
     
@@ -57,15 +58,15 @@ class JpegWriter {
         jpeg_write_scanlines(&cinfo, scanLines, maxLines);
     }
 
-    func finishCompress() {
+    func finish() {
         jpeg_finish_compress(&cinfo);
     }
 
-    func destroyCompress() {
+    func destroy() {
         jpeg_destroy_compress(&cinfo);
     }
 
-         
+             
     /* Getter-functions  ----------------------------------------------- */
     func nextScanline -> JDIMENSION {cinfo.next_scanline;}
     func height -> Int {cinfo.image_height;}
@@ -76,8 +77,53 @@ class JpegWriter {
 
 }
    
-     
+class JpegReader {
+
+    JpegDecompressStruct cinfo;
+   
+    func new() {
+        JpegCreateDecompress(&cinfo);
+    }
+
+    func start() {
+        jpeg_start_decompress(&cinfo);
+    }
+
+    func finish() {
+        jpeg_finish_decompress(&cinfo);
+    }
+
+    func destroy() {
+        jpeg_destroy_decompress(&cinfo);
+    }     
     
+    func readHeader(Bool reqImage) {
+        jpeg_read_header(&cinfo, reqImage);
+    }
+
+    func setStdioSrc(String fileName) {
+        FILE *f = openWrapper(fileName, "rb");
+        jpeg_stdio_src(&cinfo, f);
+    }
+
+    func readScanlines(JSAMPARRAY scanLines, Int maxLines) {
+        jpeg_read_scanlines(&cinfo, scanLines, maxLines);
+    }
+
+    func setErrorMgr(JpegErrorMgr* mgr) {
+        cinfo.err = JpegStdError(mgr);
+    }
+    
+    /* Getter-functions  ----------------------------------------------- */
+    func imageHeight -> Int {cinfo.image_height;}
+    func imageWidth -> Int {cinfo.image_width;}
+    func outputWidth -> Int {cinfo.output_width;}
+    func outputHeight -> Int {cinfo.output_height;}
+    func outputScanline -> JDIMENSION {cinfo.output_scanline;}
+    func numComponents -> Int {cinfo.num_components;}
+    
+}    
+
 static func openWrapper(String fileName, String mode) -> FILE *{
     // TODO: Use Exceptions when we have them ;)
     FILE *f = fopen(fileName, mode);
@@ -88,47 +134,17 @@ static func openWrapper(String fileName, String mode) -> FILE *{
     return f;
 }
 
-unmangled func JpegStdioSrc(JDecompressPtr cinfo, String fileName)  {
-    
-    FILE *f = openWrapper(fileName, "rb");    
-    jpeg_stdio_src(cinfo, f);
-} 
 
-unmangled func JpegCreateDecompress(JDecompressPtr cinfo) {
+static  func JpegCreateDecompress(JDecompressPtr cinfo) {
     jpeg_create_decompress(cinfo);
 }
 
-unmangled func JpegCreateCompress(JCompressPtr cinfo) {
+static func JpegCreateCompress(JCompressPtr cinfo) {
     jpeg_create_compress(cinfo);
 }
 
 
-unmangled func JpegStdError(JpegErrorMgr *error) -> struct jpeg_error_mgr *{
+static func JpegStdError(JpegErrorMgr *error) -> struct jpeg_error_mgr *{
     return jpeg_std_error(error);
-}
-
-unmangled func JpegReadHeader(JDecompressPtr cinfo, Bool reqImage) {
-    jpeg_read_header(cinfo, reqImage);
-}
-
-unmangled func JpegReadScanlines(JDecompressPtr cinfo, 
-                                 JSAMPARRAY scanLines, 
-                                 JDIMENSION maxLines) 
-{
-    jpeg_read_scanlines(cinfo, scanLines, maxLines);
-}
-
-
-
-unmangled func JpegStartDecompress(JDecompressPtr cinfo) {
-    jpeg_start_decompress(cinfo);
-}
-
-unmangled func JpegFinishDecompress(JDecompressPtr cinfo) {
-    jpeg_finish_decompress(cinfo);
-}
-
-unmangled func JpegDestroyDecompress(JDecompressPtr cinfo) {
-    jpeg_destroy_decompress(cinfo);
 }
 
