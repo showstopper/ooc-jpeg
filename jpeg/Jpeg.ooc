@@ -22,6 +22,54 @@ typedef struct jpeg_error_mgr JpegErrorMgr;
 typedef j_compress_ptr JCompressPtr;
 typedef j_decompress_ptr JDecompressPtr;
 
+
+class JpegWriter {
+
+    JpegCompressStruct cinfo;
+    
+    func new {
+        this.cinfo = cinfo;
+    }
+
+    func createCompress() {
+        JpegCreateCompress(&this.cinfo);
+    }
+  
+    func setStdioDest(fileName) {
+        JpegStdioDest(&this.cinfo, fileName);
+    }
+
+    func setDefaults() {
+        JpegSetDefaults(&this.cinfo);
+    }
+
+    func startCompress() {
+        JpegStartCompress(&this.cinfo);
+    }
+    
+    func writeScanlines(JSAMPARRAY scanLines, Int maxLines) {
+        JpegWriteScanlines(&this.cinfo, scanLines, maxLines);
+    }
+
+    func finishCompress() {
+        JpegFinishCompress(&this.cinfo);
+    {
+
+    func destroyCompress() {
+        JpegDestroyCompress(&this.cinfo);
+    }
+
+    func err(=this.cinfo.err);
+    func image_width(=this.cinfo.image_width);
+    func image_heigth(=this.cinfo.image_height);
+    func input_components(=this.cinfo.input_components);
+    func in_color_space(=this.cinfo.in_color_space);
+     
+}
+*/
+   
+     
+    
 static func openWrapper(String fileName, String mode) -> FILE *{
     FILE *f = fopen(fileName, mode);
     if (!f) {
