@@ -27,15 +27,19 @@ class JpegWriter {
 
     JpegCompressStruct cinfo;
     
-    func new {
-        this.cinfo = cinfo;
+    func new (Int width, Int height, Int inputComponents, Int colorSpace) {
+        
+        JpegCreateCompress(&this.cinfo);
+        this.cinfo.image_width = width;
+        this.cinfo.image_height = height;
+        this.cinfo.input_components = inputComponents;
+        this.cinfo.in_color_space = colorSpace;
     }
-
     func createCompress() {
         JpegCreateCompress(&this.cinfo);
     }
   
-    func setStdioDest(fileName) {
+    func setStdioDest(String fileName) {
         JpegStdioDest(&this.cinfo, fileName);
     }
 
@@ -43,8 +47,12 @@ class JpegWriter {
         JpegSetDefaults(&this.cinfo);
     }
 
-    func startCompress() {
-        JpegStartCompress(&this.cinfo);
+    func setErrorMgr(JpegErrorMgr *mgr) {
+        this.cinfo.err = JpegStdError(mgr);
+    }
+    
+    func startCompress(bool writeAllTables) {
+        JpegStartCompress(&this.cinfo, writeAllTables);
     }
     
     func writeScanlines(JSAMPARRAY scanLines, Int maxLines) {
@@ -53,20 +61,22 @@ class JpegWriter {
 
     func finishCompress() {
         JpegFinishCompress(&this.cinfo);
-    {
+    }
 
     func destroyCompress() {
         JpegDestroyCompress(&this.cinfo);
     }
 
-    func err(=this.cinfo.err);
-    func image_width(=this.cinfo.image_width);
-    func image_heigth(=this.cinfo.image_height);
-    func input_components(=this.cinfo.input_components);
-    func in_color_space(=this.cinfo.in_color_space);
-     
+         
+    /* Getter-functions  ----------------------------------------------- */
+    func nextScanline -> JDIMENSION {this.cinfo.next_scanline;}
+    func height -> Int {return this.cinfo.image_height;}
+    func width -> Int {return this.cinfo.image_width;}
+    func inputComponents -> Int {return this.cinfo.input_components;}
+    func inColorSpace -> Int {return this.cinfo.in_color_space;}
+
+
 }
-*/
    
      
     
