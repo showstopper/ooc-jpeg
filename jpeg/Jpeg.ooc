@@ -29,49 +29,49 @@ class JpegWriter {
     
     func new (Int width, Int height, Int inputComponents, Int colorSpace) {
         
-        JpegCreateCompress(&this.cinfo);
-        this.cinfo.image_width = width;
-        this.cinfo.image_height = height;
-        this.cinfo.input_components = inputComponents;
-        this.cinfo.in_color_space = colorSpace;
+        JpegCreateCompress(&cinfo);
+        cinfo.image_width = width;
+        cinfo.image_height = height;
+        cinfo.input_components = inputComponents;
+        cinfo.in_color_space = colorSpace;
     }
      
     func setStdioDest(String fileName) {
         FILE *f = openWrapper(fileName, "wb");
-        jpeg_stdio_dest(&this.cinfo, f);
+        jpeg_stdio_dest(&cinfo, f);
     }
 
     func setDefaults() {
-        jpeg_set_defaults(&this.cinfo);
+        jpeg_set_defaults(&cinfo);
     }
 
-    func setErrorMgr(JpegErrorMgr *mgr) {
-        this.cinfo.err = JpegStdError(mgr);
+    func setErrorMgr(JpegErrorMgr* mgr) {
+        cinfo.err = JpegStdError(mgr);
     }
     
-    func startCompress(bool writeAllTables) {
-        jpeg_start_compress(&this.cinfo, writeAllTables);
+    func startCompress(Bool writeAllTables) {
+        jpeg_start_compress(&cinfo, writeAllTables);
     }
     
     func writeScanlines(JSAMPARRAY scanLines, Int maxLines) {
-        jpeg_write_scanlines(&this.cinfo, scanLines, maxLines);
+        jpeg_write_scanlines(&cinfo, scanLines, maxLines);
     }
 
     func finishCompress() {
-        jpeg_finish_compress(&this.cinfo);
+        jpeg_finish_compress(&cinfo);
     }
 
     func destroyCompress() {
-        jpeg_destroy_compress(&this.cinfo);
+        jpeg_destroy_compress(&cinfo);
     }
 
          
     /* Getter-functions  ----------------------------------------------- */
-    func nextScanline -> JDIMENSION {this.cinfo.next_scanline;}
-    func height -> Int {return this.cinfo.image_height;}
-    func width -> Int {return this.cinfo.image_width;}
-    func inputComponents -> Int {return this.cinfo.input_components;}
-    func inColorSpace -> Int {return this.cinfo.in_color_space;}
+    func nextScanline -> JDIMENSION {cinfo.next_scanline;}
+    func height -> Int {cinfo.image_height;}
+    func width -> Int {cinfo.image_width;}
+    func inputComponents -> Int {cinfo.input_components;}
+    func inColorSpace -> Int {cinfo.in_color_space;}
 
 
 }
@@ -79,11 +79,11 @@ class JpegWriter {
      
     
 static func openWrapper(String fileName, String mode) -> FILE *{
+    // TODO: Use Exceptions when we have them ;)
     FILE *f = fopen(fileName, mode);
     if (!f) {
-         printf("File not found!\n");
-         printf("Abort");
-         exit(-1);
+        fprintf(stderr, "[jpeg.Jpeg] Couldn't open %s\n", fileName ); 
+        exit(-1);
     }
     return f;
 }
