@@ -35,16 +35,14 @@ class JpegWriter {
         this.cinfo.input_components = inputComponents;
         this.cinfo.in_color_space = colorSpace;
     }
-    func createCompress() {
-        JpegCreateCompress(&this.cinfo);
-    }
-  
+     
     func setStdioDest(String fileName) {
-        JpegStdioDest(&this.cinfo, fileName);
+        FILE *f = openWrapper(fileName, "wb");
+        jpeg_stdio_dest(&this.cinfo, f);
     }
 
     func setDefaults() {
-        JpegSetDefaults(&this.cinfo);
+        jpeg_set_defaults(&this.cinfo);
     }
 
     func setErrorMgr(JpegErrorMgr *mgr) {
@@ -52,19 +50,19 @@ class JpegWriter {
     }
     
     func startCompress(bool writeAllTables) {
-        JpegStartCompress(&this.cinfo, writeAllTables);
+        jpeg_start_compress(&this.cinfo, writeAllTables);
     }
     
     func writeScanlines(JSAMPARRAY scanLines, Int maxLines) {
-        JpegWriteScanlines(&this.cinfo, scanLines, maxLines);
+        jpeg_write_scanlines(&this.cinfo, scanLines, maxLines);
     }
 
     func finishCompress() {
-        JpegFinishCompress(&this.cinfo);
+        jpeg_finish_compress(&this.cinfo);
     }
 
     func destroyCompress() {
-        JpegDestroyCompress(&this.cinfo);
+        jpeg_destroy_compress(&this.cinfo);
     }
 
          
@@ -96,19 +94,14 @@ unmangled func JpegStdioSrc(JDecompressPtr cinfo, String fileName)  {
     jpeg_stdio_src(cinfo, f);
 } 
 
-unmangled func JpegStdioDest(JCompressPtr cinfo, String fileName) {
-    
-    FILE *f = openWrapper(fileName, "wb");
-    jpeg_stdio_dest(cinfo, f);
+unmangled func JpegCreateDecompress(JDecompressPtr cinfo) {
+    jpeg_create_decompress(cinfo);
 }
 
 unmangled func JpegCreateCompress(JCompressPtr cinfo) {
     jpeg_create_compress(cinfo);
 }
 
-unmangled func JpegCreateDecompress(JDecompressPtr cinfo) {
-    jpeg_create_decompress(cinfo);
-}
 
 unmangled func JpegStdError(JpegErrorMgr *error) -> struct jpeg_error_mgr *{
     return jpeg_std_error(error);
@@ -125,12 +118,7 @@ unmangled func JpegReadScanlines(JDecompressPtr cinfo,
     jpeg_read_scanlines(cinfo, scanLines, maxLines);
 }
 
-unmangled func JpegWriteScanlines(JCompressPtr cinfo, 
-                                  JSAMPARRAY scanLines, 
-                                  JDIMENSION maxLines) 
-{
-    jpeg_write_scanlines(cinfo, scanLines, maxLines);
-}
+
 
 unmangled func JpegStartDecompress(JDecompressPtr cinfo) {
     jpeg_start_decompress(cinfo);
@@ -144,18 +132,3 @@ unmangled func JpegDestroyDecompress(JDecompressPtr cinfo) {
     jpeg_destroy_decompress(cinfo);
 }
 
-unmangled func JpegStartCompress(JCompressPtr cinfo, Bool writeAllTables) {
-    jpeg_start_compress(cinfo, writeAllTables);
-}
-
-unmangled func JpegFinishCompress(JCompressPtr cinfo) {
-    jpeg_finish_compress(cinfo);
-}
-
-unmangled func JpegDestroyCompress(JCompressPtr cinfo) {
-    jpeg_destroy_compress(cinfo);
-}
-
-unmangled func JpegSetDefaults(JCompressPtr cinfo) {
-    jpeg_set_defaults(cinfo);
-}
