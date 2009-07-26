@@ -33,28 +33,20 @@ func readJpegFile(String fileName) -> Bool{
 }
 
 func writeJpegFile(String fileName) -> Bool {
-    JpegCompressStruct cinfo;
+    
+    JpegWriter writer = new(width, height, bytes_per_pixel, color_space);
     JpegErrorMgr jerr;
     JSAMPROW rowPointer[1];
-    cinfo.err = JpegStdError(&jerr);
-    
-    JpegCreateCompress(&cinfo);
-    JpegStdioDest(&cinfo, fileName);
-    cinfo.image_width = width;
-    cinfo.image_height = height;
-    cinfo.input_components = bytes_per_pixel;
-    cinfo.in_color_space = color_space;
-    
-    JpegSetDefaults(&cinfo);
-    JpegStartCompress(&cinfo, true);
-    
-    while (cinfo.next_scanline < cinfo.image_height) {
-        rowPointer[0] = &raw_image[cinfo.next_scanline*cinfo.image_width*cinfo.input_components];
-        JpegWriteScanlines(&cinfo, rowPointer, 1);
+    writer.setErrorMgr(&jerr);
+    writer.setStdioDest(fileName);    
+    writer.setDefaults();
+    writer.startCompress(true);
+    while (writer.nextScanline < writer.height) {
+        rowPointer[0] = &raw_image[writer.nextScanline*writer.width*writer.inputComponents];
+        writer.writeScanlines(rowPointer, 1);
     }
-    
-    JpegFinishCompress(&cinfo);
-    JpegDestroyCompress(&cinfo);
+    writer.finishCompress();
+    writer.destroyCompress();
     
     return true;
 }
